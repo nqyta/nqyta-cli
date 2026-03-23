@@ -1,0 +1,25 @@
+{
+  "name": "nqita-cli",
+  "version": "0.1.0",
+  "description": "Command-line prototype for talking to Nqita with a local daemon and sprite events.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "nqita": "dist/bin.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "dev": "tsx src/bin.ts",
+    "prepare": "npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}
