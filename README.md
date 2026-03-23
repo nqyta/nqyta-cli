@@ -43,7 +43,7 @@ NQITA_RUNTIME    # Custom runtime URL (optional)
 
 ## Documentation
 
-- [nqita](https://github.com/nqita/nqita) — Main runtime
+- [nqyta/nqyta](https://github.com/nqyta/nqyta) — Main runtime
 - [nikita.wokspec.org](https://nikita.wokspec.org) — Live demo
 
 ---
