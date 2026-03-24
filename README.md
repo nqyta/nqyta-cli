@@ -112,6 +112,24 @@ This release does **not** yet provide:
 
 It does provide the daemon and event model those features need.
 
+## Contributing
+
+We want open-source help across disciplines, not just terminal tooling.
+
+High-value contribution lanes:
+
+- pixel artists and animators who can help define Nqita's emotional range
+- runtime and systems developers for the daemon, socket protocol, memory, and provider routing
+- platform engineers for the future desktop overlay bridge
+- designers and UX contributors who can help the sprite, bubble, and terminal experiences feel coherent
+
+If you are helping on the broader Nqita project, start with the main repo:
+
+- `https://github.com/ws-nqita/nqita`
+- `https://github.com/ws-nqita/nqita/blob/main/CONTRIBUTING.md`
+
+If you want to help specifically on the local runtime and CLI stack, this repo is the right place.
+
 ## Architecture
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for the intended split between CLI, daemon, provider routing, sprite bridge, and future desktop overlay.
