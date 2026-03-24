@@ -2,28 +2,32 @@
 
 `nqita-cli` is the first runnable prototype of talking to Nqita from a terminal while a local sprite watcher renders her state transitions.
 
-This release is a **prototype**, not the final desktop overlay. It gives you:
+Nqita is pronounced `Nick-ee-tah`. Keep that consistent across the project.
+
+This release is the beginning of Nqita as an OS-level companion, not a website-first chatbot. It gives you:
 
 - a local daemon process
 - a terminal chat client
 - Groq as the native default provider
-- BYOK-oriented provider config
+- a YAML config for privacy, tools, personality, and plugins
 - a pixel-ish sprite watcher that follows daemon state changes
 
 ## What works right now
 
 ### Local daemon
 
-The daemon runs on a local socket and owns:
+The daemon runs on a local socket today and is the right place to grow into a background service later. It owns:
 
 - provider selection
 - chat requests
+- intent-aware task handling
 - sprite-state emission
 - local config
+- privacy boundaries and permission policy
 
 ### Chat flow
 
-`nqita chat` will:
+`nqita chat`, `nqita think`, `nqita explain`, and `nqita run` will:
 
 1. start the daemon if it is not already running
 2. send your message to the daemon
@@ -49,7 +53,7 @@ node dist/bin.js sprite watch
 In another terminal:
 
 ```bash
-node dist/bin.js chat "summarize what you are doing"
+node dist/bin.js think "summarize what you are doing"
 ```
 
 ## Groq default
@@ -64,33 +68,57 @@ export GROQ_API_KEY=your_key_here
 
 Without a Groq key, the prototype still works in fallback mode so the daemon and sprite loop remain demoable.
 
-## BYOK direction
+## Config model
 
-The config model is already structured around provider switching. The first prototype exposes:
+Nqita is configured through `nqita.yaml`:
 
 ```bash
-node dist/bin.js config get
+node dist/bin.js config path
 node dist/bin.js config set provider groq
-node dist/bin.js config set model llama-3.3-70b-versatile
+node dist/bin.js config set privacy.mode strict-local
+node dist/bin.js config set tools.browser true
 ```
 
 Current config file:
 
-```json
-{
-  "provider": "groq",
-  "model": "llama-3.3-70b-versatile",
-  "sprite": {
-    "enabled": true,
-    "bubbleMode": true
-  }
-}
+```yaml
+name: "Nqita"
+pronunciation: "Nick-ee-tah"
+provider: groq
+model: "llama-3.3-70b-versatile"
+privacy:
+  mode: strict-local
+  logPrompts: false
+  allowWindowContext: false
+  allowTerminalContext: true
+  encryptLocalMemory: true
+personality:
+  mode: default
+  tone: "concise, grounded, technically useful"
+tools:
+  terminal: true
+  browser: false
+  vscode: false
+plugins:
+  web3: false
+sprite:
+  enabled: true
+  bubbleMode: true
 ```
+
+Default posture:
+
+- everything stays local unless explicitly configured otherwise
+- context access is permissioned, not assumed
+- Web3 capabilities stay pluggable and off by default
 
 ## Commands
 
 ```bash
 nqita chat [message]
+nqita think [message]
+nqita explain [message]
+nqita run [message]
 nqita daemon start [--foreground]
 nqita daemon status
 nqita daemon stop
@@ -108,7 +136,8 @@ This release does **not** yet provide:
 - a native OS overlay window
 - actual pointer/window navigation across the desktop
 - real provider adapters beyond Groq
-- tool execution against the operating system
+- gated execution against the operating system
+- a full plugin host
 
 It does provide the daemon and event model those features need.
 
@@ -129,6 +158,11 @@ If you are helping on the broader Nqita project, start with the main repo:
 - `https://github.com/ws-nqita/nqita/blob/main/CONTRIBUTING.md`
 
 If you want to help specifically on the local runtime and CLI stack, this repo is the right place.
+
+## Local API and plugin direction
+
+- Minimal daemon API: [LOCAL_API.md](./LOCAL_API.md)
+- Runtime and plugin design: [ARCHITECTURE.md](./ARCHITECTURE.md)
 
 ## Architecture
 

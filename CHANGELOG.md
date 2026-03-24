@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.0
+
+- standardized pronunciation as `Nick-ee-tah`
+- documented Nqita as a terminal-first, OS-level local companion
+- switched the canonical config format to `nqita.yaml`
+- added `think`, `explain`, and `run` CLI intents
+- added a minimal local daemon API spec
+- documented the plugin model and optional Web3 attestation layer
+
 ## 0.1.0
 
 Initial prototype release of `nqita-cli`.

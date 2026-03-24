@@ -1,24 +1,38 @@
-import type { NqitaConfig } from "./types.js";
+import type { NqitaConfig, NqitaIntent } from "./types.js";
 
-export async function generateReply(message: string, config: NqitaConfig): Promise<string> {
+export async function generateReply(
+  message: string,
+  config: NqitaConfig,
+  intent: NqitaIntent
+): Promise<string> {
   if (config.provider === "groq") {
     const key = process.env.GROQ_API_KEY;
     if (key) {
       try {
-        return await chatWithGroq(message, config.model, key);
+        return await chatWithGroq(message, config, key, intent);
       } catch (error) {
         const detail = error instanceof Error ? error.message : "unknown provider failure";
-        return mockReply(message, `Groq failed, falling back to prototype mode: ${detail}`);
+        return mockReply(message, config, intent, `Groq failed, falling back to prototype mode: ${detail}`);
       }
     }
 
-    return mockReply(message, "No GROQ_API_KEY found, running prototype mode.");
+    return mockReply(message, config, intent, "No GROQ_API_KEY found, running prototype mode.");
   }
 
-  return mockReply(message, `Provider ${config.provider} is not wired yet, using prototype mode.`);
+  return mockReply(
+    message,
+    config,
+    intent,
+    `Provider ${config.provider} is not wired yet, using prototype mode.`
+  );
 }
 
-async function chatWithGroq(message: string, model: string, apiKey: string): Promise<string> {
+async function chatWithGroq(
+  message: string,
+  config: NqitaConfig,
+  apiKey: string,
+  intent: NqitaIntent
+): Promise<string> {
   const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -26,13 +40,12 @@ async function chatWithGroq(message: string, model: string, apiKey: string): Pro
       Authorization: `Bearer ${apiKey}`
     },
     body: JSON.stringify({
-      model,
+      model: config.model,
       temperature: 0.3,
       messages: [
         {
           role: "system",
-          content:
-            "You are Nqita, a pink pixel desktop companion. Be concise, technically useful, and a little embodied."
+          content: buildSystemPrompt(config, intent)
         },
         {
           role: "user",
@@ -58,13 +71,27 @@ async function chatWithGroq(message: string, model: string, apiKey: string): Pro
   return text;
 }
 
-function mockReply(message: string, reason: string): string {
+function buildSystemPrompt(config: NqitaConfig, intent: NqitaIntent): string {
+  return [
+    `You are ${config.name}, pronounced ${config.pronunciation}.`,
+    "You are a local-first OS-level AI companion that starts in the terminal and grows into a native desktop/runtime layer.",
+    "Be concise, technically useful, and embodied.",
+    `Current intent: ${intent}.`,
+    `Privacy mode: ${config.privacy.mode}.`,
+    `Allowed tools: terminal=${String(config.tools.terminal)}, browser=${String(config.tools.browser)}, vscode=${String(config.tools.vscode)}.`,
+    "Never imply remote logging is required. Prefer local-first recommendations."
+  ].join(" ");
+}
+
+function mockReply(message: string, config: NqitaConfig, intent: NqitaIntent, reason: string): string {
   return [
     reason,
     "",
-    `Prototype Nqita heard: "${message}"`,
+    `${config.name} (${config.pronunciation}) heard: "${message}"`,
     "",
-    "Visual state sequence: reaction -> thinking -> speaking -> idle.",
-    "Next implementation step is wiring the sprite bridge to a real desktop overlay."
+    `Intent lane: ${intent}.`,
+    `Privacy mode: ${config.privacy.mode}.`,
+    "Visual state sequence: reaction -> thinking/researching -> speaking -> idle.",
+    "Next implementation step is wiring structured local tools, permissions, and a real desktop overlay."
   ].join("\n");
 }

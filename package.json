@@ -1,7 +1,7 @@
 {
   "name": "nqita-cli",
-  "version": "0.1.0",
-  "description": "Command-line prototype for talking to Nqita with a local daemon and sprite events.",
+  "version": "0.2.0",
+  "description": "Terminal-first local daemon for Nqita, the OS-level companion runtime.",
   "license": "MIT",
   "type": "module",
   "bin": {

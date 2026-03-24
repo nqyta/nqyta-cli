@@ -1,4 +1,4 @@
-import { loadConfig, saveConfig, setConfigValue } from "../lib/config.js";
+import { getConfigValue, loadConfig, saveConfig, setConfigValue } from "../lib/config.js";
 import { getConfigPath } from "../lib/paths.js";
 
 export function runConfigCommand(args: string[]): void {
@@ -19,25 +19,10 @@ export function runConfigCommand(args: string[]): void {
   if (subcommand === "get") {
     const config = loadConfig();
     if (!key) {
-      process.stdout.write(JSON.stringify(config, null, 2) + "\n");
+      process.stdout.write(`${getConfigPath()}\n`);
       return;
     }
-
-    const lookup = key === "provider"
-      ? config.provider
-      : key === "model"
-        ? config.model
-        : key === "sprite.enabled"
-          ? String(config.sprite.enabled)
-          : key === "sprite.bubbleMode"
-            ? String(config.sprite.bubbleMode)
-            : undefined;
-
-    if (lookup === undefined) {
-      throw new Error(`Unknown config key: ${key}`);
-    }
-
-    process.stdout.write(String(lookup) + "\n");
+    process.stdout.write(getConfigValue(key) + "\n");
     return;
   }
 

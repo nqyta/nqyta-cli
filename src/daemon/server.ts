@@ -56,18 +56,20 @@ async function handleRequest(request: DaemonRequest): Promise<DaemonResponse> {
     return {
       id: request.id,
       ok: true,
+      intent: request.intent ?? "chat",
       message: "pong"
     };
   }
 
   if (request.type === "chat" && request.message) {
-    emitSpriteState("reaction", "I heard you.");
+    const intent = request.intent ?? "chat";
+    emitSpriteState("reaction", intent === "run" ? "Preparing an action." : "I heard you.");
     await pause(120);
-    emitSpriteState("thinking", "Thinking...");
+    emitSpriteState(intent === "explain" ? "researching" : "thinking", bubbleForIntent(intent));
     await pause(180);
 
     const config = loadConfig();
-    const reply = await generateReply(request.message, config);
+    const reply = await generateReply(request.message, config, intent);
     const state = emitSpriteState("speaking", "Reply ready.");
     setTimeout(() => {
       emitSpriteState("idle", "Back at the desktop edge.");
@@ -76,6 +78,7 @@ async function handleRequest(request: DaemonRequest): Promise<DaemonResponse> {
     return {
       id: request.id,
       ok: true,
+      intent,
       message: reply,
       state
     };
@@ -86,6 +89,22 @@ async function handleRequest(request: DaemonRequest): Promise<DaemonResponse> {
     ok: false,
     error: "Unsupported request."
   };
+}
+
+function bubbleForIntent(intent: DaemonRequest["intent"]): string {
+  if (intent === "think") {
+    return "Thinking through options...";
+  }
+
+  if (intent === "explain") {
+    return "Breaking it down...";
+  }
+
+  if (intent === "run") {
+    return "Checking the action path...";
+  }
+
+  return "Thinking...";
 }
 
 function pause(ms: number): Promise<void> {

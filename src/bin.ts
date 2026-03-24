@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { fileURLToPath } from "node:url";
-import { runChatCommand } from "./commands/chat.js";
+import { runChatCommand, runIntentCommand } from "./commands/chat.js";
 import { runConfigCommand } from "./commands/config.js";
 import { runDaemonCommand } from "./commands/daemon.js";
 import { runSpriteCommand } from "./commands/sprite.js";
@@ -18,6 +18,11 @@ async function main(): Promise<void> {
 
   if (command === "chat") {
     await runChatCommand(args, entryFile);
+    return;
+  }
+
+  if (command === "think" || command === "explain" || command === "run") {
+    await runIntentCommand(command, args, entryFile);
     return;
   }
 
@@ -43,9 +48,13 @@ function printHelp(): void {
   process.stdout.write(
     [
       "nqita-cli prototype",
+      "Pronounced: Nick-ee-tah",
       "",
       "Commands:",
       "  nqita chat [message]",
+      "  nqita think [message]",
+      "  nqita explain [message]",
+      "  nqita run [message]",
       "  nqita daemon start [--foreground]",
       "  nqita daemon status",
       "  nqita daemon stop",

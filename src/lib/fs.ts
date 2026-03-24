@@ -17,3 +17,16 @@ export function readJsonFile<T>(filePath: string): T | null {
     return null;
   }
 }
+
+export function writeTextFile(filePath: string, value: string): void {
+  ensureBaseDir();
+  fs.writeFileSync(filePath, value, "utf8");
+}
+
+export function readTextFile(filePath: string): string | null {
+  try {
+    return fs.readFileSync(filePath, "utf8");
+  } catch {
+    return null;
+  }
+}

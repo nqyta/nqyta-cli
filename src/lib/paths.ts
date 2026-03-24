@@ -8,6 +8,10 @@ export function getBaseDir(): string {
 }
 
 export function getConfigPath(): string {
+  return path.join(baseDir, "nqita.yaml");
+}
+
+export function getLegacyConfigPath(): string {
   return path.join(baseDir, "config.json");
 }
 

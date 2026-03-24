@@ -4,6 +4,8 @@
 
 Let users talk to Nqita from the terminal while her desktop sprite visibly acts as the embodied runtime.
 
+Nqita is pronounced `Nick-ee-tah`.
+
 The key rule is simple:
 
 **text output and sprite behavior must come from the same runtime state machine.**
@@ -20,6 +22,13 @@ The agent should live in a local daemon process so that:
 - the sprite remains active outside one shell session
 - memory and tool state live in one place
 - multiple clients can attach later
+
+This is what "OS-level companion" means in practice:
+
+- background runtime first, UI surfaces second
+- local API over Unix socket, named pipe, or `http://localhost`
+- explicit permissions for context reads and tool execution
+- privacy-first storage and local memory by default
 
 ## Components
 
@@ -49,6 +58,12 @@ Responsibilities:
 - persist memory and preferences
 
 This is the real brain.
+
+It should eventually run as:
+
+- `systemd --user` on Linux
+- `launchd` on macOS
+- tray/service runtime on Windows
 
 ### 3. Sprite bridge
 
@@ -116,6 +131,17 @@ Suggested terminal-to-daemon request:
 }
 ```
 
+Suggested intent envelope:
+
+```json
+{
+  "type": "chat.request",
+  "intent": "explain",
+  "sessionId": "sess_123",
+  "message": "why is this build failing"
+}
+```
+
 ## Provider model
 
 ### Default provider
@@ -164,6 +190,39 @@ Suggested precedence:
 3. local config file
 4. OS keychain-backed saved config
 
+## Config model
+
+The canonical user config should be `nqita.yaml`.
+
+It controls:
+
+- provider and model defaults
+- privacy posture
+- tool permissions
+- personality mode
+- optional plugin enablement
+
+Example:
+
+```yaml
+name: "Nqita"
+pronunciation: "Nick-ee-tah"
+provider: groq
+model: "llama-3.3-70b-versatile"
+privacy:
+  mode: strict-local
+  logPrompts: false
+  allowWindowContext: false
+  allowTerminalContext: true
+  encryptLocalMemory: true
+tools:
+  terminal: true
+  browser: false
+  vscode: false
+plugins:
+  web3: false
+```
+
 ## OS action model
 
 The daemon should not directly couple model output to raw system control.
@@ -182,6 +241,52 @@ Examples:
 - inspect clipboard
 
 That keeps embodiment safe and debuggable.
+
+## Plugin model
+
+Core runtime stays clean. Optional capabilities come in through plugins.
+
+Suggested interface:
+
+```ts
+export interface NqitaPlugin {
+  id: string;
+  name: string;
+  version: string;
+  setup(ctx: NqitaPluginContext): Promise<void>;
+  getTools?(): Promise<NqitaToolDefinition[]>;
+  onEvent?(event: NqitaRuntimeEvent): Promise<void>;
+}
+```
+
+Initial plugin lanes:
+
+- IDE integrations
+- OS-specific helpers
+- memory backends
+- optional Web3 wallet/RPC integrations
+
+## Optional Web3 layer
+
+Web3 stays disabled by default and never defines Nqita's core identity.
+
+Possible plugin responsibilities:
+
+- explain contracts, signatures, and EIPs in plain language
+- read balances and token/NFT state from a local wallet or RPC
+- produce opt-in attestations about completed task categories
+
+Suggested attestation shape:
+
+```json
+{
+  "taskId": "task_123",
+  "user": "0xabc...",
+  "timestamp": 1742700000,
+  "taskType": "research",
+  "summaryHash": "0xdef..."
+}
+```
 
 ## MVP recommendation
 
@@ -205,6 +310,7 @@ That keeps embodiment safe and debuggable.
 - add BYOK provider switching
 - add basic OS actions
 - add explicit permission model for sensitive actions
+- add plugin host with Web3 disabled by default
 
 ## Technical recommendation
 
@@ -225,5 +331,6 @@ Later, the sprite shell can still move to Tauri or another platform-specific lay
 - do not make BYOK the primary architecture
 - do not let the sprite invent its own state independent of the daemon
 - do not tie the first release to full autonomous OS control
+- do not bake Web3 directly into the core runtime
 
 The first release should feel embodied, not omnipotent.
